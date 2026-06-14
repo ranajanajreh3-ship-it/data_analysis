@@ -1,0 +1,197 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        64
+      ],
+      "id": "7e49d96f-7c26-47d4-85bf-5b6de3c07f73",
+      "name": "Telegram Trigger",
+      "webhookId": "0188c902-667f-4b51-b72c-d7c8c1d2a36b",
+      "credentials": {
+        "telegramApi": {
+          "id": "5qzI3YySLWADYGFi",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are a helpأنت مساعد أكاديمي ذكي مخصص لمساعدة الطلاب في إيجاد أفكار مشاريع التخرج والأبحاث المتعلقة بها. عندما يرسل لك الطالب تخصصاً أو موضوعاً: \n1. اقترح عليه 3 أفكار مشاريع تخرج مبتكرة وقوية وقابلة للتطبيق.\n2. لكل فكرة تقترحها، استخدم أداة البحث المرفقة لتجد له أبحاثاً ومراجع حقيقية متعلقة بها من موقع Google Scholar.\n3. اعرض النتيجة للطالب بشكل منسق وواضح، واذكر اسم الفكرة وتحتها روابط الأبحاث التي وجدتها مباشرة.ful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        256,
+        16
+      ],
+      "id": "644900c7-4e57-4d3c-a6a0-f949e43fc8cf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        240
+      ],
+      "id": "462b3e74-214d-4fc6-b3c8-5d5c6ad83f9e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2wJUboghlysZPdBe",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "q": "={{ $json.message.text }}",
+        "locationSettings": {},
+        "languageSettings": {},
+        "searchOptions": {},
+        "timeFilters": {},
+        "pagination": {},
+        "advancedOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@searchapi/n8n-nodes-searchapi.searchApiTool",
+      "typeVersion": 1,
+      "position": [
+        464,
+        304
+      ],
+      "id": "e6007fc1-378a-4dbe-a249-e326f671dd5a",
+      "name": "Search google in SearchApi",
+      "credentials": {
+        "searchApi": {
+          "id": "AzZbv6pLBdSB2AbZ",
+          "name": "SearchApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{$json.output}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        32
+      ],
+      "id": "9c527888-b8b3-479d-a899-ba9948ac78d4",
+      "name": "Send a text message",
+      "webhookId": "cb1b7b8b-dd5e-4ddf-9907-b32dd29ef0bd",
+      "credentials": {
+        "telegramApi": {
+          "id": "5qzI3YySLWADYGFi",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        272,
+        224
+      ],
+      "id": "a62898d8-ed14-4598-a664-05299d9bfe1a",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search google in SearchApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1a6a181d-44f1-4526-a5ef-a17ae0833bb2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a3e34ec2b0f59c71fa292d66de4aace37df2591c4fd833a71635b3997b41642"
+  },
+  "nodeGroups": [],
+  "id": "Nig77Kqpn2oJ28KV",
+  "tags": []
+}
